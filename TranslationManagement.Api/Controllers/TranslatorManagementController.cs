@@ -37,7 +37,7 @@ namespace TranslationManagement.Api.Controlers
         }
 
         [HttpPost]
-        public bool AddTranslator(ITranslatorModel translator)
+        public bool AddTranslator(TranslatorModel translator)
         {
             _context.Translators.Add(translator);
             return _context.SaveChanges() > 0;

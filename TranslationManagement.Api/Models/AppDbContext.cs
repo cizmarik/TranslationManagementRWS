@@ -10,7 +10,7 @@ namespace TranslationManagement.Api.Models
         {
         }
 
-        public DbSet<ITranslationJob> TranslationJobs { get; set; }
-        public DbSet<ITranslatorModel> Translators { get; set; }
+        public DbSet<TranslationJob> TranslationJobs { get; set; }
+        public DbSet<TranslatorModel> Translators { get; set; }
     }
 }

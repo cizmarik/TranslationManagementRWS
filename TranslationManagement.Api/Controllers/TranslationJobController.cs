@@ -40,7 +40,7 @@ namespace TranslationManagement.Api.Controllers
         }
 
         [HttpPost]
-        public bool CreateJob(ITranslationJob job)
+        public bool CreateJob(TranslationJob job)
         {
             job.Status = JobStatuses.New;
             SetPrice(job);
