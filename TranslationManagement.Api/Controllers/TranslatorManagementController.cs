@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Linq;
+using System.Xml.Linq;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using TranslationManagement.Api.Models;
@@ -42,7 +44,7 @@ namespace TranslationManagement.Api.Controlers
             _context.Translators.Add(translator);
             return _context.SaveChanges() > 0;
         }
-        
+
         [HttpPost]
         public string UpdateTranslatorStatus(int Translator, string newStatus = "")
         {
@@ -57,6 +59,42 @@ namespace TranslationManagement.Api.Controlers
             _context.SaveChanges();
 
             return "updated";
+        }
+
+        [HttpDelete]
+        public bool DeleteTranslator(int id) 
+        {
+
+            var translator = _context.Translators.Find(id);
+            if (translator != null)
+            {
+                try
+                {
+                    if (_context.Translators.Remove(translator).State == EntityState.Deleted)
+                    {
+                        _logger.LogInformation($"translator {id} has been removed");
+                        return _context.SaveChanges() > 0;
+                    }
+                    else
+                    {
+                        _logger.LogError($"translator removal of {id} has encountered an error!");
+                        return false;
+                    }
+                }
+                catch (NullReferenceException)
+                { // only example on multiple exceptions that can be thrown
+                    // Caused by logger, do nothing;
+                    return _context.SaveChanges() > 0;
+                }
+                catch (Exception exception)
+                { 
+                    _logger.LogError($"Unknown exception when deleting translator with id: {id} exception: {exception.ToString()} callStack: {exception.StackTrace}");
+                    return false;
+                }
+                
+            }
+
+            return false;          
         }
     }
 }
