@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using System.Xml;
 using System.Xml.Linq;
 using External.ThirdParty.Services;
 using Microsoft.AspNetCore.Http;
@@ -9,6 +8,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using TranslationManagement.Api.Controlers;
+using TranslationManagement.Api.Models;
+
 
 namespace TranslationManagement.Api.Controllers
 {
@@ -16,22 +17,6 @@ namespace TranslationManagement.Api.Controllers
     [Route("api/jobs/[action]")]
     public class TranslationJobController : ControllerBase
     {
-        public class TranslationJob
-        {
-            public int Id { get; set; }
-            public string CustomerName { get; set; }
-            public string Status { get; set; }
-            public string OriginalContent { get; set; }
-            public string TranslatedContent { get; set; }
-            public double Price { get; set; }
-        }
-
-        static class JobStatuses
-        {
-            internal static readonly string New = "New";
-            internal static readonly string Inprogress = "InProgress";
-            internal static readonly string Completed = "Completed";
-        }
 
         private AppDbContext _context;
         private readonly ILogger<TranslatorManagementController> _logger;
@@ -43,21 +28,21 @@ namespace TranslationManagement.Api.Controllers
         }
 
         [HttpGet]
-        public TranslationJob[] GetJobs()
+        public ITranslationJob[] GetJobs()
         {
             return _context.TranslationJobs.ToArray();
         }
 
         const double PricePerCharacter = 0.01;
-        private void SetPrice(TranslationJob job)
+        private void SetPrice(ITranslationJob job)
         {
             job.Price = job.OriginalContent.Length * PricePerCharacter;
         }
 
         [HttpPost]
-        public bool CreateJob(TranslationJob job)
+        public bool CreateJob(ITranslationJob job)
         {
-            job.Status = "New";
+            job.Status = JobStatuses.New;
             SetPrice(job);
             _context.TranslationJobs.Add(job);
             bool success = _context.SaveChanges() > 0;
@@ -113,16 +98,17 @@ namespace TranslationManagement.Api.Controllers
             _logger.LogInformation("Job status update request received: " + newStatus + " for job " + jobId.ToString() + " by translator " + translatorId);
             if (typeof(JobStatuses).GetProperties().Count(prop => prop.Name == newStatus) == 0)
             {
-                return "invalid status";
+                return JobStatuses.InvalidStatus;
             }
 
             var job = _context.TranslationJobs.Single(j => j.Id == jobId);
 
             bool isInvalidStatusChange = (job.Status == JobStatuses.New && newStatus == JobStatuses.Completed) ||
-                                         job.Status == JobStatuses.Completed || newStatus == JobStatuses.New;
+                                         job.Status == JobStatuses.Completed || 
+                                         newStatus == JobStatuses.New;
             if (isInvalidStatusChange)
             {
-                return "invalid status change";
+                return JobStatuses.InvalidStatusChange;
             }
 
             job.Status = newStatus;

@@ -2,7 +2,7 @@
 using TranslationManagement.Api.Controlers;
 using TranslationManagement.Api.Controllers;
 
-namespace TranslationManagement.Api
+namespace TranslationManagement.Api.Models
 {
     public class AppDbContext : DbContext
     {
@@ -10,7 +10,7 @@ namespace TranslationManagement.Api
         {
         }
 
-        public DbSet<TranslationJobController.TranslationJob> TranslationJobs { get; set; }
-        public DbSet<TranslatorManagementController.TranslatorModel> Translators { get; set; }
+        public DbSet<ITranslationJob> TranslationJobs { get; set; }
+        public DbSet<ITranslatorModel> Translators { get; set; }
     }
 }

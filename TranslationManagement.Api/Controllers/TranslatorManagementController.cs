@@ -3,6 +3,8 @@ using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using TranslationManagement.Api.Models;
+
 
 namespace TranslationManagement.Api.Controlers
 {
@@ -10,14 +12,6 @@ namespace TranslationManagement.Api.Controlers
     [Route("api/TranslatorsManagement/[action]")]
     public class TranslatorManagementController : ControllerBase
     {
-        public class TranslatorModel
-        {
-            public int Id { get; set; }
-            public string Name { get; set; }
-            public string HourlyRate { get; set; }
-            public string Status { get; set; }
-            public string CreditCardNumber { get; set; }
-        }
 
         public static readonly string[] TranslatorStatuses = { "Applicant", "Certified", "Deleted" };
 
@@ -31,19 +25,19 @@ namespace TranslationManagement.Api.Controlers
         }
 
         [HttpGet]
-        public TranslatorModel[] GetTranslators()
+        public ITranslatorModel[] GetTranslators()
         {
             return _context.Translators.ToArray();
         }
 
         [HttpGet]
-        public TranslatorModel[] GetTranslatorsByName(string name)
+        public ITranslatorModel[] GetTranslatorsByName(string name)
         {
             return _context.Translators.Where(t => t.Name == name).ToArray();
         }
 
         [HttpPost]
-        public bool AddTranslator(TranslatorModel translator)
+        public bool AddTranslator(ITranslatorModel translator)
         {
             _context.Translators.Add(translator);
             return _context.SaveChanges() > 0;

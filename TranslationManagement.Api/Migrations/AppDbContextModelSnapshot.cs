@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using TranslationManagement.Api;
+using TranslationManagement.Api.Models;
 
 namespace TranslationManagement.Api.Migrations
 {
