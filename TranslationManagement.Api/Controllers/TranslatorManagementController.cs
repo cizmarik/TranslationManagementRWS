@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using TranslationManagement.Api.Controllers;
 using TranslationManagement.Api.Models;
 
 
@@ -45,9 +46,11 @@ namespace TranslationManagement.Api.Controlers
             return _context.SaveChanges() > 0;
         }
 
-        [HttpPost]
+        [HttpPut]
         public string UpdateTranslatorStatus(int Translator, string newStatus = "")
         {
+
+
             _logger.LogInformation("User status update request: " + newStatus + " for user " + Translator.ToString());
             if (TranslatorStatuses.Where(status => status == newStatus).Count() == 0)
             {
