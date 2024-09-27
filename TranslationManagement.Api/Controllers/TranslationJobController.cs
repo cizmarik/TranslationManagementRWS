@@ -5,6 +5,7 @@ using System.Xml.Linq;
 using External.ThirdParty.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using TranslationManagement.Api.Controlers;
@@ -115,5 +116,43 @@ namespace TranslationManagement.Api.Controllers
             _context.SaveChanges();
             return "updated";
         }
+
+        [HttpDelete]
+        public bool DeleteJob(int id)
+        {
+
+            var job = _context.TranslationJobs.Find(id);
+            if (job != null)
+            {
+                try
+                {
+                    if (_context.TranslationJobs.Remove(job).State == EntityState.Deleted)
+                    {
+                        _logger.LogInformation($"job {id} has been removed");
+                        return _context.SaveChanges() > 0;
+                    }
+                    else
+                    {
+                        _logger.LogError($"job removal of {id} has encountered an error!");
+                        return false;
+                    }
+                }
+                catch (NullReferenceException)
+                { // only example on multiple exceptions that can be thrown
+                    // Caused by logger, do nothing;
+                    return _context.SaveChanges() > 0;
+                }
+                catch (Exception exception)
+                {
+                    _logger.LogError($"Unknown exception when deleting job with id: {id} exception: {exception.ToString()} callStack: {exception.StackTrace}");
+                    return false;
+                }
+
+            }
+
+            return false;
+        }
+
+
     }
 }
