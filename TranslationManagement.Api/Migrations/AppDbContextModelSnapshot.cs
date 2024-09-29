@@ -44,6 +44,10 @@ namespace TranslationManagement.Api.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<int>("TranslatorID")
+                        .HasDefaultValue(0)
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("CustomerName")
                         .HasColumnType("TEXT");
 
