@@ -23,36 +23,6 @@ namespace TranslationManagement.Api.Controllers
         private AppDbContext _context;
         private readonly ILogger<TranslatorManagementController> _logger;
 
-
-        /// <summary>
-        /// Validates if the stasus change is valid.
-        /// </summary>
-        /// <param name="previousStatus">Job status that is going to be changed by a new status.</param>
-        /// <param name="newStatus">Job status that we would like to change to.</param>
-        /// <returns>newStatus if it was valid. <cref>JobStatuses.InvalidStatusChange</cref> and <cref>JobStatuses.InvalidStatus</cref> 
-        ///          are also considered as valid states.</returns>
-        private string ValidateNewJobStatus(string previousStatus, string newStatus)
-        {
-            if (false == JobStatuses.AllStatuses.Contains(newStatus))
-            { return JobStatuses.InvalidStatus; }
-
-            if (IsJobStatusChangeValid(previousStatus, newStatus))
-            { return JobStatuses.InvalidStatusChange; }
-
-            return newStatus;
-        }
-
-        private bool IsJobStatusChangeValid(string previousStatus, string newStatus)
-        {
-            if ((previousStatus == JobStatuses.New && newStatus == JobStatuses.Completed) ||
-                 previousStatus == JobStatuses.Completed ||
-                 newStatus == JobStatuses.New)
-            {
-                return false;
-            }
-            return true;
-        }
-
         public TranslationJobController(IServiceScopeFactory scopeFactory, ILogger<TranslatorManagementController> logger)
         {
             _context = scopeFactory.CreateScope().ServiceProvider.GetService<AppDbContext>();
@@ -125,27 +95,34 @@ namespace TranslationManagement.Api.Controllers
         }
 
         [HttpPut]
-        public string UpdateJobStatus(int jobId, int translatorId, string newStatus = "")
+        public StatusCodeResult UpdateJobStatus(int jobId, int translatorId, string newStatus = "")
         {
             _logger.LogInformation("Job status update request received: " + newStatus + " for job " + jobId.ToString() + " by translator " + translatorId);
 
 
             var job = _context.TranslationJobs.Single(j => j.Id == jobId);
-            job.Status = ValidateNewJobStatus(job.Status, newStatus);
+            job.Status = JobStatuses.ValidateNewJobStatus(job.Status, newStatus);
 
             _context.SaveChanges();
-            return "updated";
+            return new StatusCodeResult(StatusCodes.Status201Created);
         }
 
         [HttpPut]
-        public string UpdateJobTranslator(int jobId, int translatorId)
+        public StatusCodeResult UpdateJobTranslator(int jobId, int translatorId)
         {
             _logger.LogInformation("Job translator update request received for job " + jobId.ToString() + " by translator " + translatorId);
             var job = _context.TranslationJobs.Single(j => j.Id == jobId);
+            var translator = _context.Translators.Single(t => t.Id == translatorId);
 
-           job.TranslatorID = translatorId;
+            if (translator.Status != TranslatorStatuses.CertifiedStatus)
+            {
+                _logger.LogWarning($"Translator {translatorId} is not certified and can't work on job: {jobId}");
+                return new StatusCodeResult(StatusCodes.Status405MethodNotAllowed); 
+            }
+
+            job.TranslatorID = translatorId;
             _context.SaveChanges();
-            return "updated";
+            return new StatusCodeResult(StatusCodes.Status201Created);
         }
 
         [HttpDelete]

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Xml.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,9 +14,6 @@ namespace TranslationManagement.Api.Controlers
     [Route("api/TranslatorsManagement/[action]")]
     public class TranslatorManagementController : ControllerBase
     {
-
-        public static readonly string[] TranslatorStatuses = { "Applicant", "Certified", "Deleted" };
-
         private readonly ILogger<TranslatorManagementController> _logger;
         private AppDbContext _context;
 
@@ -47,17 +43,15 @@ namespace TranslationManagement.Api.Controlers
         }
 
         [HttpPut]
-        public string UpdateTranslatorStatus(int Translator, string newStatus = "")
+        public string UpdateTranslatorStatus(int translatorId, string newStatus = "")
         {
-
-
-            _logger.LogInformation("User status update request: " + newStatus + " for user " + Translator.ToString());
-            if (TranslatorStatuses.Where(status => status == newStatus).Count() == 0)
+            _logger.LogInformation("User status update request: " + newStatus + " for user " + translatorId.ToString());
+            if (false == TranslatorStatuses.IsTranslatorStatusValid(newStatus)) // I use false, because ! is very easily overlooked
             {
                 throw new ArgumentException("unknown status");
             }
 
-            var job = _context.Translators.Single(j => j.Id == Translator);
+            var job = _context.Translators.Single(j => j.Id == translatorId);
             job.Status = newStatus;
             _context.SaveChanges();
 
@@ -65,22 +59,22 @@ namespace TranslationManagement.Api.Controlers
         }
 
         [HttpDelete]
-        public bool DeleteTranslator(int id) 
+        public bool DeleteTranslator(int translatorId)
         {
 
-            var translator = _context.Translators.Find(id);
+            var translator = _context.Translators.Find(translatorId);
             if (translator != null)
             {
                 try
                 {
                     if (_context.Translators.Remove(translator).State == EntityState.Deleted)
                     {
-                        _logger.LogInformation($"translator {id} has been removed");
+                        _logger.LogInformation($"translator {translatorId} has been removed");
                         return _context.SaveChanges() > 0;
                     }
                     else
                     {
-                        _logger.LogError($"translator removal of {id} has encountered an error!");
+                        _logger.LogError($"translator removal of {translatorId} has encountered an error!");
                         return false;
                     }
                 }
@@ -90,14 +84,14 @@ namespace TranslationManagement.Api.Controlers
                     return _context.SaveChanges() > 0;
                 }
                 catch (Exception exception)
-                { 
-                    _logger.LogError($"Unknown exception when deleting translator with id: {id} exception: {exception.ToString()} callStack: {exception.StackTrace}");
+                {
+                    _logger.LogError($"Unknown exception when deleting translator with translatorId: {translatorId} exception: {exception.ToString()} callStack: {exception.StackTrace}");
                     return false;
                 }
-                
+
             }
 
-            return false;          
+            return false;
         }
     }
 }
