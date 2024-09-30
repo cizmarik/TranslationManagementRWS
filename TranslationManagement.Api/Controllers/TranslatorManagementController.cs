@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Linq;
+using System.Text.Json;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -29,17 +31,20 @@ namespace TranslationManagement.Api.Controlers
             return _context.Translators.ToArray();
         }
 
-        [HttpGet]
-        public ITranslatorModel[] GetTranslatorsByName(string name)
+        [HttpGet("{name}")]
+        public ContentResult GetTranslatorsByName(string name)
         {
-            return _context.Translators.Where(t => t.Name == name).ToArray();
+            var content = _context.Translators.Where(t => t.Name == name).ToArray();
+            var serializedContent = JsonSerializer.Serialize(content);
+            ContentResult contentResult = new ContentResult() { Content = serializedContent, StatusCode = StatusCodes.Status201Created};
+            return contentResult;
         }
 
         [HttpPost]
-        public bool AddTranslator(TranslatorModel translator)
+        public StatusCodeResult AddTranslator(TranslatorModel translator)
         {
             _context.Translators.Add(translator);
-            return _context.SaveChanges() > 0;
+            return _context.SaveChanges() > 0 ? new StatusCodeResult(StatusCodes.Status201Created) :  new StatusCodeResult(StatusCodes.Status400BadRequest);
         }
 
         [HttpPut]
