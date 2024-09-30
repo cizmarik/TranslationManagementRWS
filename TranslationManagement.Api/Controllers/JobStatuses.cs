@@ -1,18 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
+﻿using System.Collections.Generic;
 
 namespace TranslationManagement.Api.Controllers
 {
-    internal static class JobStatuses
+    public static class JobStatuses
     {
-        internal static readonly string New = "New";
-        internal static readonly string Inprogress = "InProgress";
-        internal static readonly string Completed = "Completed";
-        internal static readonly string InvalidStatus = "invalid status";
-        internal static readonly string InvalidStatusChange = "invalid status change";
+        public const string New = "New";
+        public const string Inprogress = "InProgress";
+        public const string Completed = "Completed";
+        public const string InvalidStatus = "invalid status";
+        public const string InvalidStatusChange = "invalid status change";
 
-        internal static HashSet<string> AllStatuses = new HashSet<string> 
+        public static HashSet<string> AllStatuses = new HashSet<string> 
         {
             JobStatuses.New,
             JobStatuses.Inprogress, 
@@ -24,6 +22,9 @@ namespace TranslationManagement.Api.Controllers
 
         private static bool IsJobStatusChangeValid(string previousStatus, string newStatus)
         {
+            if (previousStatus == newStatus)
+            { return true; }
+
             if ((previousStatus == JobStatuses.New && newStatus == JobStatuses.Completed) ||
                  previousStatus == JobStatuses.Completed ||
                  newStatus == JobStatuses.New)
@@ -45,15 +46,11 @@ namespace TranslationManagement.Api.Controllers
             if (false == JobStatuses.AllStatuses.Contains(newStatus))
             { return JobStatuses.InvalidStatus; }
 
-            if (IsJobStatusChangeValid(previousStatus, newStatus))
+            if (false == IsJobStatusChangeValid(previousStatus, newStatus))
             { return JobStatuses.InvalidStatusChange; }
 
             return newStatus;
         }
-
-       
-
-
     }
 
  }
